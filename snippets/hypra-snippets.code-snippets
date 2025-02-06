@@ -1,0 +1,134 @@
+{
+    "if": {
+      "prefix": "if", 
+      "body": [
+        "if (${1:condition}) {",
+        "\t$0",
+        "}"
+      ],
+      "description": "Insert an if statement"
+    },
+    "method": {
+      "prefix": "method", 
+      "body": [
+        "method ${1:name}(${2:args}) returns (${3:args})",
+        "requires ${4:quantifier} <_${5:state}> :: ${6:expr}",
+        "ensures ${7:quantifier} <_${8:state}> :: ${9:expr}",
+        "{",
+        "\t$0",
+        "}"
+      ],
+      "description": "Insert a method declaration"
+    },
+    "while": {
+      "prefix": "while", 
+      "body": [
+        "while (${1:condition})",
+        "invariant ${2:quantifier} <_${3:state}> :: ${4:expr}",
+        "{",
+        "\t$0",
+        "}"
+      ],
+      "description": "Insert a while statement"
+    },
+    "whileDecr": {
+      "prefix": "whileDecr", 
+      "body": [
+        "while (${1:condition})",
+        "invariant ${2:quantifier} <_${3:state}> :: ${4:expr}",
+        "decreases ${5: decrease expr}",
+        "{",
+        "\t$0",
+        "}"
+      ],
+      "description": "Insert a while statement with a decrease expression"
+    },
+    "whileRule": {
+      "prefix": "whileRule", 
+      "body": [
+        "while ${1:loopRule} (${2:condition})",
+        "invariant ${3:quantifier} <_${4:state}> :: ${5:expr}",
+        "{",
+        "\t$0",
+        "}"
+      ],
+      "description": "Insert a while statement with a rule specified"
+    },
+    "whileRuleDecr": {
+      "prefix": "whileRuleDecr", 
+      "body": [
+        "while ${1:loopRule} (${2:condition})",
+        "invariant ${3:quantifier} <_${4:state}> :: ${5:expr}",
+        "decreases ${6: decrease expr}",
+        "{",
+        "\t$0",
+        "}"
+      ],
+      "description": "Insert a while statement with a rule specified"
+    },
+    "hyperAssert": {
+        "prefix": "hyperAssert",
+        "body": "hyperAssert ${1:quantifier} <_${2:state}> :: \t$0",
+        "description": "Insert a hyper assert statement"
+    },
+    "hyperAssume": {
+        "prefix": "hyperAssume",
+        "body": "hyperAssume ${1:quantifier} <_${2:state}> :: \t$0",
+        "description": "Insert a hyper assume statement"
+    },
+    "requires": {
+        "prefix": "requires",
+        "body": "requires ${1:quantifier} <_${2:state}> :: \t$0",
+        "description": "Insert a precondition"
+    },
+    "ensures": {
+        "prefix": "ensures",
+        "body": "ensures ${1:quantifier} <_${2:state}> :: \t$0",
+        "description": "Insert a postcondiion"
+    },
+    "requiresErrStates": {
+        "prefix": "requiresErr",
+        "body": "requires ${1:quantifier} <<_${2:state}>> :: \t$0",
+        "description": "Insert a precondition over error states"
+    },
+    "ensuresErrStates": {
+        "prefix": "ensuresErr",
+        "body": "ensures ${1:quantifier} <<_${2:state}>> :: \t$0",
+        "description": "Insert a postcondiion over error states"
+    },
+    "invariant": {
+        "prefix": "invariant",
+        "body": "invariant ${1:quantifier} <_${2:state}> :: \t$0",
+        "description": "Insert a postcondiion"
+    },
+    "var": {
+        "prefix": "var",
+        "body": "var ${1:ident}:${2:type}"
+    },
+    "havoc": {
+        "prefix": "havoc",
+        "body": "havoc ${0:varIdent}",
+        "description": "Initialize a variable with a random value"
+    },
+    "havocHint": {
+        "prefix": "havocHint",
+        "body": "havoc ${1:varIdent} {${2:hintIdent}}",
+        "description": "Initialize a variable with a random value and an assigned hint"
+    },
+    "use": {
+        "prefix": "use",
+        "body": "havoc ${1:hintIdentifier}(${2:value})",
+        "description": "Initialize a hint"
+    },
+    "frame": {
+        "prefix": "frame",
+        "body": [
+            "frame (${1:expression})",
+            "{",
+            "\t$0",
+            "}"
+        ],
+        "description": "Initialize a frame statement"
+    }
+  }
+  
