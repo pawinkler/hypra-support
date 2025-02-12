@@ -1,21 +1,43 @@
-import * as vsc from "vscode";
+import { window, OutputChannel } from "vscode";
 
-// Tunable parameters
-const logName = "Hypra Logs";
+type LogLevel = "INFO" | "WARN" | "ERROR" | "DEBUG";
 
-// Main code
-const outputChannel = vsc.window.createOutputChannel(logName);
+const channel = window.createOutputChannel("Hypra Logs"); 
 
-export type LogLevel = "INFO" | "WARN" | "ERROR" | "DEBUG";
-
-function getTimestamp(): string {
-  return new Date().toISOString();
+export function broadcast(msg: string, lvl: LogLevel = "INFO") {
+    log(msg, lvl);
+    notify(msg, lvl);
 }
 
-export function log(level: LogLevel, message: string) {
-  outputChannel.appendLine(`[${getTimestamp()}] [${level}] ${message}`);
+export function log(msg: string, lvl: LogLevel = "INFO") {
+  channel.appendLine(`[${getTimestamp()}] [${lvl}] ${msg}`);
 }
 
 export function clearLog() {
-    outputChannel.clear();
+    channel.clear();
+}
+
+export function showLog() {
+    channel.show();
+}
+
+export function notify(msg: string, lvl: LogLevel = "INFO") {
+    switch (lvl) {
+        case "INFO": 
+            window.showInformationMessage(msg);
+            break;
+        case "WARN": 
+            window.showWarningMessage(msg);
+            break;
+        case "ERROR": 
+            window.showErrorMessage(msg);
+            break;
+        case "DEBUG": 
+            window.showInformationMessage(`[DEBUG] ${msg}`);
+            break;
+    }
+}
+
+function getTimestamp(): string {
+  return new Date().toISOString();
 }
