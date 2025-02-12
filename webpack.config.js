@@ -32,13 +32,24 @@ const extensionConfig = {
     rules: [
       {
         test: /\.ts$/,
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+        ],
         use: [
           {
             loader: 'ts-loader'
           }
         ]
-      }
+      },
+      {
+        test: /\.ts$/,
+        exclude: /hypra/,
+        use: [
+          {
+            loader: 'ts-loader'
+          }
+        ]
+      },
     ]
   },
   devtool: 'nosources-source-map',
@@ -46,11 +57,6 @@ const extensionConfig = {
     level: "log", // enables logging required for problem matchers
   },
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'hypra', to: 'hypra' } // Copies external program to dist/external
-      ],
-    }),
   ],
 };
 module.exports = [ extensionConfig ];

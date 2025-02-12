@@ -1,71 +1,62 @@
-# hypra-support README
+# Hypra Support
 
-This is the README for your extension "hypra-support". After writing up a brief description, we recommend including the following sections.
+#### [Repository](https://github.com/pawinkler/hypra-support)&nbsp;&nbsp;|&nbsp;&nbsp;[Paper & Artifact](https://dl.acm.org/doi/10.1145/3689756)&nbsp;&nbsp;|&nbsp;&nbsp;[Code Samples](https://github.com/anqili426/hhl_frontend/tree/main/src/test)&nbsp;&nbsp;|&nbsp;&nbsp;[PMG at ETH Zurich](https://www.pm.inf.ethz.ch/)
 
-## Features
+**NOTE**: This extension is currently being developed and still unstable! 
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+The Hypra Support extension adds language support for Hypra / Hyper Hoare Logic to Visual Studio code. This includes a static syntax highlighting, static code completion and error handling. Futher, the extension contains a up-to-date instance of the [Hypra verifer](https://github.com/anqili426/hhl_frontend/), which allows direct verification of Hypra files.
 
-For example if there is an image subfolder under your extension project workspace:
+This extension is part of the Hypra Verifier, which was developed by the [Programming Methodology Group (PMG)](https://www.pm.inf.ethz.ch/) at ETH Zurich.
 
-\!\[feature X\]\(images/feature-x.png\)
+## Pre-requisites
+At the moment, Hypra Support requires very specific pre-requisites in order to be used. The Hypra extension **includes a Hypra instance**, but **does not include any external software**, like the verifiers Hypra relies on. You will need to install these tools or use those already installed on your computer.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+ * [Java](https://dev.java/), version 17.*
+ * [Boogie](https://www.microsoft.com/en-us/research/project/boogie-an-intermediate-verification-language/), version 2.15.8.0
+ * [Z3 Theorem Prover](https://github.com/Z3Prover/z3), version 4.8.14
 
-## Requirements
+Using other versions is possible, but not tested. At the moment, only the system-wide installations can be used.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Usage
 
-## Extension Settings
+There are two possible use cases supported: **In-file verification** and **manual verification**. By default, verification is attemtepted using the _--auto_ argument for rule selection.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+**In-file verification**:
 
-For example:
+1. Install the Hypra Support extension in Visual Studio Code.
+2. Open or create a Hypra file (.hhl).
+3. Save the corresponding file to start the verification process.
 
-This extension contributes the following settings:
+**Manual Verification**:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+1. Install the Hypra Support extension in Visual Studio Code.
+2. Run the _Hypra: Start Verification_ or the _Hypra: Start Verification with Arguments_ command.
 
-## Known Issues
+### Commands
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+These commands are supported. 
 
-## Release Notes
+**Hypra: Start Verification**:
 
-Users appreciate release notes as you update your extension.
+- (No hypra file) Specify the path to corresponding Hypra file.
+- Verification process starts and feedback is printed to the debug console.
 
-### 1.0.0
+**Hypra: Start Verification with Arguments**:
 
-Initial release of ...
+- (No hypra file) Specify the path to corresponding Hypra file.
+- Specify all arguments needed for verifying a Hypra file from the console (except file path).
+- Verification process starts and feedback is printed to the debug console.
 
-### 1.0.1
+Note: Failing to specify correct arguments will lead to erronous behaviour in this case.
 
-Fixed issue #.
+## Hypra / HHL Documentation
 
-### 1.1.0
+At the moment, no documentation for Hypra / HHL exists. Information can be found in the [corresponding paper](https://dl.acm.org/doi/10.1145/3689756), on the website of the [Programming Methodology Group](https://www.pm.inf.ethz.ch/) at ETH Zurich, or in the provided [code examples](https://github.com/anqili426/hhl_frontend/tree/main/src/test).
 
-Added features X, Y, and Z.
+## Contact 
 
----
+If you have questions, you may reach us via the following contacts.
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- **Extension**: Paul Winkler ([paul.winkler@inf.ethz.ch](mailto:paul.winkler@inf.ethz.ch))
+- **Hypra Verifier**: Anqi Li ([anqi.li@inf.ethz.ch](mailto:anqi.li@inf.ethz.ch))
+- **Programming Methodology Group at ETH Zurich**: Prof. Dr. Peter Müller ([peter.mueller@inf.ethz.ch](mailto:peter.mueller@inf.ethz.ch))
