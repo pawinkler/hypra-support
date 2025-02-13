@@ -8,10 +8,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 Secondary release for testing purposes. 
 
-### Added
-
-- Added correct README.md
-
 ## [0.0.1] - 2025-02-07 - unstable
 
 Initial release for testing purposes.
