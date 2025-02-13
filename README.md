@@ -11,6 +11,7 @@ This extension is part of the Hypra Verifier, which was developed by the [Progra
 ## Pre-requisites
 At the moment, Hypra Support requires very specific pre-requisites in order to be used. The Hypra extension **includes a Hypra instance**, but **does not include any external software**, like the verifiers Hypra relies on. You will need to install these tools or use those already installed on your computer.
 
+ * [MacOS](https://apps.apple.com/us/app/macos-sonoma/id6450717509?mt=12), version 14.*
  * [Java](https://dev.java/), version 17.*
  * [Boogie](https://www.microsoft.com/en-us/research/project/boogie-an-intermediate-verification-language/), version 2.15.8.0
  * [Z3 Theorem Prover](https://github.com/Z3Prover/z3), version 4.8.14

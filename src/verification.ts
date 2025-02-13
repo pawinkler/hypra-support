@@ -1,12 +1,13 @@
 import { window, Range, TextDocument, Position, ExtensionContext } from "vscode";
-import { exec, spawn } from "child_process";
+import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import { join } from "path";
 import { broadcast, clearLog, log, notify } from "./logs";
 
 type CodeError = { 
     name: string; 
     code: number; 
-    pos: number; 
+    offsetLeft: number; 
+    offsetRight: number;
     descr: string 
 }
 
@@ -18,6 +19,8 @@ const hypraDevPath = "/Users/paulwinkler/Desktop/hhl_frontend/target/scala-2.13/
 
 let ctx: ExtensionContext | undefined = undefined;
 let hypraProdPath: string | undefined = undefined;
+
+let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined
 
 export function setContext(_ctx: ExtensionContext) {
     ctx = _ctx;
@@ -38,6 +41,8 @@ export async function checkPrerequisites(): Promise<boolean> {
 }
 
 export function verify(filePath: string, args: string[] | undefined = undefined) {
+    if (verificationProcess) { verificationProcess.kill(); }
+
     const editor = window.activeTextEditor;
     const doc = editor?.document;
 
@@ -49,30 +54,30 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
     clearLog();
 
     // prepare arguments
-    if (args) { args = ['-jar', env === "development" ? hypraDevPath : hypraProdPath!, filePath, "--ext"].concat(args); }
-	else { args = ['-jar', env === "development" ? hypraDevPath : hypraProdPath!, filePath, "--ext", "--auto"]; }
+    if (args) { args = ["-Xss32m", '-jar', env === "development" ? hypraDevPath : hypraProdPath!, filePath, "--ext"].concat(args); }
+	else { args = ["-Xss32m", '-jar', env === "development" ? hypraDevPath : hypraProdPath!, filePath, "--ext", "--auto"]; }
 
     // start verification
-    const process = spawn('java', args); 
+    verificationProcess = spawn('java', args); 
 
-    process.stdout.on('data', (data: Buffer) => {
+    verificationProcess.stdout.on('data', (data: Buffer) => {
 		const str = data.toString();
 
 		if (str.startsWith("JSON")) {
 			const [id, _, raw] = str.split("-");
 
 			try {
-				const obj = JSON.parse(raw) as { descr: string};
+				const obj = JSON.parse(raw) as { descr: string };
 				log(obj.descr);
 			} catch (e) {
-				log("Failed to parse json for:\n" + raw, "WARN");
+				log("Failed to parse stdout json for:\n" + raw, "WARN");
 			}
 		} else {
 			log(str);
 		}
 	});
 
-    process.stderr.on('data', (data: string) => {
+    verificationProcess.stderr.on('data', (data: string) => {
         const str = data.toString();
 
         if (str.startsWith("JSON")) {
@@ -81,7 +86,7 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
 
             try {
                 if (type === "ERC") {
-                    const obj = JSON.parse(raw) as { name: string; code: number; pos:number; descr: string };
+                    const obj = JSON.parse(raw) as CodeError;
                     handleCodeError(obj);
                 } else if (type === "ERS") {
                     const err = JSON.parse(raw) as { name: string; descr: string };
@@ -93,15 +98,17 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
                     broadcast(warnStr, "WARN");
                 }
             } catch (e) {
-                log("Failed to parse json for:\n" + raw, "WARN");
+                log("Failed to parse stderr json for:\n" + raw, "WARN");
             }
         } else {
             log(str, "ERROR");
         }
     });
 
-    process.on('close', (code) => {
+    verificationProcess.on('close', (code) => {
 		broadcast(`Verification finishd with code ${code}`);
+        
+        verificationProcess = undefined;
 	});
 }
 
@@ -122,15 +129,18 @@ function getPositionFromOffset(document: TextDocument, offset: number): Position
 
 
 function handleCodeError(err: CodeError) {
-	const errStr = `${err.name} (CODE: ${err.code}) at pos ${err.pos}: ${err.descr}`;
-	broadcast(errStr, "ERROR");
+	let errStr = `${err.name} at pos ${err.offsetLeft}: ${err.descr}`;
 
 	const editor = window.activeTextEditor;
 	const doc = editor?.document;
-	if (!doc) { return; }
+	if (doc) {
+        const start = getPositionFromOffset(doc, err.offsetLeft);
+        const end = getPositionFromOffset(doc, err.offsetRight);
+        // const word = doc.getText(doc.getWordRangeAtPosition(start));
+        const range = new Range(start, end);
+        editor.setDecorations(redLineDecorationType, [range]);
 
-	const start = getPositionFromOffset(doc, err.pos);
-	const word = doc.getText(doc.getWordRangeAtPosition(start));
-    const range = new Range(start, getPositionFromOffset(doc, err.pos + word.length));
-    editor.setDecorations(redLineDecorationType, [range]);
+        errStr = `File ${doc.fileName}:${start.line + 1}:${start.character + 1}: ${errStr}`;
+    } 
+    log(errStr, "ERROR");
 }

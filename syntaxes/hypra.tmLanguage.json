@@ -3,206 +3,47 @@
 	"name": "Hypra Language",
 	"patterns": [
         {
-            "include": "#method-declaration"
+            "name": "comment.line.custom",
+            "match": "//.*"
         },
-		{
-			"include": "#comments"
-		}
-    ],
-    "repository": {
-        "method-declaration": {
-            "patterns": [
-                {
-                    "name": "meta.method.hhl",
-                    "begin": "\\bmethod\\b\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "storage.type.function.hhl"
-                        },
-                        "1": {
-                            "name": "entity.name.function.hhl"
-                        }
-                    },
-                    "end": "\\)",
-                    "patterns": [
-                        {
-                            "include": "#parameter-list"
-                        }
-                    ]
-                },
-                {
-                    "name": "meta.returns.hhl",
-                    "begin": "\\breturns\\b\\s*\\(",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "keyword.other.returns.hhl"
-                        }
-                    },
-                    "end": "\\)",
-                    "patterns": [
-                        {
-                            "include": "#parameter-list"
-                        }
-                    ]
-                },
-                {
-                    "name": "meta.precondition.hhl",
-                    "begin": "\\brequires\\b\\s+",
-					"beginCaptures": {
-						"0": {
-							"name": "keyword.other.verification.contracts.hhl"
-						}
-					},
-					"end": "$",
-                    "patterns": [
-						{
-							"#include": "#hyper-expr"
-						}
-					]
-                },
-                {
-                    "name": "meta.postcondition.hhl",
-                    "begin": "\\bensures\\b\\s+",
-					"beginCaptures": {
-						"0": {
-							"name": "keyword.other.verification.contracts.hhl"
-						}
-					},
-					"end": "$",
-                    "patterns": [
-						{
-							"#include": "#hyper-expr"
-						}
-					]
-                },
-                {
-                    "name": "meta.method-body.hhl",
-                    "begin": "\\{",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "punctuation.section.block.begin.hhl"
-                        }
-                    },
-                    "end": "\\}",
-                    "endCaptures": {
-                        "0": {
-                            "name": "punctuation.section.block.end.hhl"
-                        }
-                    },
-                    "patterns": [
-                        {
-                            "include": "#statements"
-                        }
-                    ]
-                }
-            ]
+        {
+            "name": "comment.block.custom",
+            "begin": "/\\*",
+            "end": "\\*/"
         },
-        "parameter-list": {
-            "patterns": [
-                {
-                    "name": "variable.parameter.hhl",
-                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b\\s*:\\s*([A-Z][a-zA-Z0-9_]*)",
-                    "captures": {
-                        "1": {
-                            "name": "variable.parameter.hhl"
-                        },
-                        "2": {
-                            "name": "storage.type.hhl"
-                        }
-                    }
-                },
-                {
-                    "match": ",",
-                    "name": "punctuation.separator.parameter.hhl"
-                }
-            ]
+        {
+            "name": "keyword.control.custom",
+            "match": "\\b(if|else|while|return|method|hyperAssume|hyperAssert|assume|assert|frame|var)\\b"
         },
-		"hyper-expr": {
-			"patterns": [
-				{ "include": "#quantifier" }
-			]
-		},
-		"quantifier": {
-			"patterns": [
-				{
-					"name": "expr.hyper.quantifier",
-                    "match": "\\b((forall)|(exists))\\b",
-                    "captures": {
-                        "0": {
-                            "name": "storage.type.hhl"
-                        }
-                    }
-				}
-			]
-		},
-        "statements": {
-            "patterns": [
-                {
-                    "include": "#variable-assignment"
-                },
-                {
-                    "include": "#method-call"
-                },
-                {
-                    "include": "#control-structures"
-                }
-            ]
+        {
+          "name": "keyword.verification.custom",
+          "match": "\\b(assert|assume|check|verify|ensures|requires|invariant)\\b"
         },
-        "variable-assignment": {
-            "patterns": [
-                {
-                    "name": "meta.assignment.hhl",
-                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*:=\\s*([^;]+);",
-                    "captures": {
-                        "1": {
-                            "name": "variable.other.hhl"
-                        },
-                        "2": {
-                            "name": "meta.expression.hhl"
-                        }
-                    }
-                }
-            ]
+        {
+          "name": "variable.other.constant.",
+          "match": "\\b(forall|exists)\\b"
         },
-        "method-call": {
-            "patterns": [
-                {
-                    "name": "meta.function-call.hhl",
-                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
-                    "beginCaptures": {
-                        "1": {
-                            "name": "entity.name.function.hhl"
-                        }
-                    },
-                    "end": "\\)",
-                    "patterns": [
-                        {
-                            "include": "#expression-list"
-                        }
-                    ]
-                }
-            ]
+        {
+            "name": "storage.type.custom",
+            "match": "\\b(Int|Bool|Set|Seq|Map)\\b"
         },
-        "expression-list": {
-            "patterns": [
-                {
-                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b",
-                    "name": "variable.other.hhl"
-                },
-                {
-                    "match": ",",
-                    "name": "punctuation.separator.expression.hhl"
-                }
-            ]
+        {
+          "name": "variable.state.custom",
+          "match": "<_[a-zA-Z_][a-zA-Z0-9_]*>"
         },
-        "control-structures": {
-            "patterns": [
-                {
-                    "name": "keyword.control.hhl",
-                    "match": "\\b(if|else|while|return)\\b"
-                }
-            ]
+        {
+            "name": "entity.name.function",
+            "match": "\\+|-|\\*|/"
+        },
+        {
+            "name": "entity.name.function",
+            "match": "==|\\!=|<|>|<=|>="
+        },
+        {
+            "name": "entity.name.function",
+            "match": "\\+\\+|\\bunion\\b|\\bintersection\\b|\\bsetminus\\b"
         }
-    },
+    ],
+    "repository": {},
 	"scopeName": "source.hypra"
   }

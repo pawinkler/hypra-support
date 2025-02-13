@@ -10,7 +10,8 @@ export function broadcast(msg: string, lvl: LogLevel = "INFO") {
 }
 
 export function log(msg: string, lvl: LogLevel = "INFO") {
-  channel.appendLine(`[${getTimestamp()}] [${lvl}] ${msg}`);
+  // channel.appendLine(`[${getTimestamp()}] [${lvl}] ${msg}`);
+  channel.appendLine(`[${lvl}] ${msg}`);
 }
 
 export function clearLog() {
