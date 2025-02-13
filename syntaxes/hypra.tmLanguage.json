@@ -13,11 +13,11 @@
         },
         {
             "name": "keyword.control.custom",
-            "match": "\\b(if|else|while|return|method|hyperAssume|hyperAssert|assume|assert|frame|var)\\b"
+            "match": "\\b(if|else|while|return|method|hyperAssume|hyperAssert|assume|assert|frame|var|havoc|use)\\b"
         },
         {
           "name": "keyword.verification.custom",
-          "match": "\\b(assert|assume|check|verify|ensures|requires|invariant)\\b"
+          "match": "\\b(assert|assume|ensures|requires|decreases|invariant)\\b"
         },
         {
           "name": "variable.other.constant.",

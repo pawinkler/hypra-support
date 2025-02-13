@@ -61,24 +61,24 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
     verificationProcess = spawn('java', args); 
 
     verificationProcess.stdout.on('data', (data: Buffer) => {
-		const str = data.toString();
+		const str = data.toString().trim();
 
 		if (str.startsWith("JSON")) {
-			const [id, _, raw] = str.split("-");
+            const raw =	 str.slice(9);
 
 			try {
 				const obj = JSON.parse(raw) as { descr: string };
 				log(obj.descr);
 			} catch (e) {
-				log("Failed to parse stdout json for:\n" + raw, "WARN");
+                log("Failed to parse stdout json for:\n" + str.replace("\n", "\\n"), "WARN");
 			}
 		} else {
-			log(str);
+			log("UNPARSED: " + str);
 		}
 	});
 
     verificationProcess.stderr.on('data', (data: string) => {
-        const str = data.toString();
+        const str = data.toString().trim();
 
         if (str.startsWith("JSON")) {
             const type = str.slice(5, 8);
@@ -98,15 +98,15 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
                     broadcast(warnStr, "WARN");
                 }
             } catch (e) {
-                log("Failed to parse stderr json for:\n" + raw, "WARN");
+                log("Failed to parse stderr json for:\n" + str.replace("\n", "\\n"), "WARN");
             }
         } else {
-            log(str, "ERROR");
+            log("UNPARSED: " + str, "ERROR");
         }
     });
 
     verificationProcess.on('close', (code) => {
-		broadcast(`Verification finishd with code ${code}`);
+		broadcast(`Verification finished with code ${code}`);
         
         verificationProcess = undefined;
 	});
@@ -136,7 +136,6 @@ function handleCodeError(err: CodeError) {
 	if (doc) {
         const start = getPositionFromOffset(doc, err.offsetLeft);
         const end = getPositionFromOffset(doc, err.offsetRight);
-        // const word = doc.getText(doc.getWordRangeAtPosition(start));
         const range = new Range(start, end);
         editor.setDecorations(redLineDecorationType, [range]);
 
