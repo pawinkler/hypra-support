@@ -2,7 +2,7 @@
   "name": "hypra-support",
   "displayName": "Hypra Support",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -38,18 +38,18 @@
       {
         "command": "hypra-support.startVerification",
         "title": "Hypra: Start Verification"
-      }, 
+      },
       {
         "command": "hypra-support.startVerificationWithArgs",
         "title": "Hypra: Start Verification with Arguments"
       }
     ],
     "snippets": [
-    {
-      "language": "hypra",
-      "path": "./snippets/hypra-snippets.code-snippets"
-    }
-  ]
+      {
+        "language": "hypra",
+        "path": "./snippets/hypra-snippets.code-snippets"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
