@@ -21,7 +21,7 @@
         },
         {
           "name": "variable.other.constant.",
-          "match": "\\b(forall|exists)\\b"
+          "match": "\\b(forall|exists|true|false)\\b"
         },
         {
             "name": "storage.type.custom",

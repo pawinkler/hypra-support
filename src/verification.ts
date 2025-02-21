@@ -14,13 +14,11 @@ type CodeError = {
 const redLineDecorationType = window.createTextEditorDecorationType({
     textDecoration: 'underline wavy red',
 });
-const env = process.env.NODE_ENV || 'development';
-const hypraDevPath = "/Users/paulwinkler/Desktop/hhl_frontend/target/scala-2.13/hhl.jar";
 
 let ctx: ExtensionContext | undefined = undefined;
 let hypraProdPath: string | undefined = undefined;
 
-let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined
+let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined;
 
 export function setContext(_ctx: ExtensionContext) {
     ctx = _ctx;
@@ -54,8 +52,8 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
     clearLog();
 
     // prepare arguments
-    if (args) { args = ["-Xss32m", '-jar', env === "development" ? hypraDevPath : hypraProdPath!, filePath, "--ext"].concat(args); }
-	else { args = ["-Xss32m", '-jar', env === "development" ? hypraDevPath : hypraProdPath!, filePath, "--ext", "--auto"]; }
+    if (args) { args = ["-Xss32m", '-jar', hypraProdPath!, filePath, "--ext"].concat(args); }
+	else { args = ["-Xss32m", '-jar', hypraProdPath!, filePath, "--ext", "--auto"]; }
 
     // start verification
     verificationProcess = spawn('java', args); 
