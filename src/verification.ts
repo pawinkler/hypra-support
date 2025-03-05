@@ -1,24 +1,17 @@
 import { window, Range, TextDocument, Position, ExtensionContext } from "vscode";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import { join } from "path";
-import { broadcast, clearLog, log, notify } from "./logs";
+import { broadcast, clearLog, log, LogEntry, notify, parseLog } from "./logs";
 
-type CodeError = { 
-    name: string; 
-    code: number; 
-    offsetLeft: number; 
-    offsetRight: number;
-    descr: string 
-}
 
 const redLineDecorationType = window.createTextEditorDecorationType({
     textDecoration: 'underline wavy red',
 });
 
-let ctx: ExtensionContext | undefined = undefined;
-let hypraProdPath: string | undefined = undefined;
+let ctx: ExtensionContext | null = null;
+let hypraProdPath: string | null = null;
 
-let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined;
+let verificationProcess: ChildProcessWithoutNullStreams | null = null;
 
 export function setContext(_ctx: ExtensionContext) {
     ctx = _ctx;
@@ -29,7 +22,7 @@ export async function checkPrerequisites(): Promise<boolean> {
     const cmds = ["java", "z3", "boogie"];
 	for (let i in cmds) {
 		if (!await commandExists(cmds[i])) {
-			broadcast(`Failed to activate Hypra Helper. "${cmds[i]}" was not found, but it needed for this application`, "ERROR");
+			broadcast(`Failed to activate Hypra Helper. "${cmds[i]}" was not found, but it needed for this application`, "ERR");
 			log("This application relies on:\n- Java 17.*\n- Boogie 2.15.8.0\n- z3 4.8.14. \nUsing other versions is possible, but not recommended and happens at the risk of the user.");
 			return false;
 		}
@@ -57,57 +50,63 @@ export function verify(filePath: string, args: string[] | undefined = undefined)
 
     // start verification
     verificationProcess = spawn('java', args); 
+    verificationProcess.stdout.on('data', handleSTDOUT);
+    verificationProcess.stderr.on('data', handleSTDERR);
+    verificationProcess.on('exit', handleTermination);
+}
 
-    verificationProcess.stdout.on('data', (data: Buffer) => {
-		const str = data.toString().trim();
-
-		if (str.startsWith("JSON")) {
-            const raw =	 str.slice(9);
-
-			try {
-				const obj = JSON.parse(raw) as { descr: string };
-				log(obj.descr);
-			} catch (e) {
-                log("Failed to parse stdout json for:\n" + str.replace("\n", "\\n"), "WARN");
-			}
-		} else {
-			log("UNPARSED: " + str);
-		}
-	});
-
-    verificationProcess.stderr.on('data', (data: string) => {
-        const str = data.toString().trim();
-
-        if (str.startsWith("JSON")) {
-            const type = str.slice(5, 8);
-            const raw =	 str.slice(9);
-
-            try {
-                if (type === "ERC") {
-                    const obj = JSON.parse(raw) as CodeError;
-                    handleCodeError(obj);
-                } else if (type === "ERS") {
-                    const err = JSON.parse(raw) as { name: string; descr: string };
-                    const errStr = `${err.name}: ${err.descr}`;
-                    broadcast(errStr, "ERROR");
-                } else {
-                    const warn = JSON.parse(raw) as { name: string; descr: string };
-                    const warnStr = `${warn.name}: ${warn.descr}`;
-                    broadcast(warnStr, "WARN");
-                }
-            } catch (e) {
-                log("Failed to parse stderr json for:\n" + str.replace("\n", "\\n"), "WARN");
+function handleSTDOUT(data: Buffer) {
+    const hanldeJSON = (jsonStr: string) => { 
+        try {
+            const obj = JSON.parse(jsonStr);
+            if (obj.level === "ERR") {
+                handleCodeError(obj);
+            } else {
+                log(parseLog(obj));
             }
-        } else {
-            log("UNPARSED: " + str, "ERROR");
+        } catch (e) {
+            console.log("Parsing failed due to the following error:", e, jsonStr);
+            log("Failed to parse JSON object provided via STDOUT!", "ERR");
+            log(jsonStr, "ERR");
         }
-    });
+    };
 
-    verificationProcess.on('close', (code) => {
-		broadcast(`Verification finished with code ${code}`);
-        
-        verificationProcess = undefined;
-	});
+    data.toString().trimEnd().split("\n").forEach(hanldeJSON);
+}
+
+function handleSTDERR(data: Buffer) {
+    const str = data.toString().trim();
+    notify("An unexpected error occured during verification. More information can be found in the extension's output.", "ERR");
+    log(str, "ERR");
+}
+
+function handleTermination(code: number) {
+    verificationProcess = null;
+
+    if (code === 0) {
+        broadcast("Verification finished successfully", "INF");
+    } else {
+        broadcast(`Verification finished with code ${code}`, "ERR");
+    }
+}
+
+function handleCodeError(err: LogEntry) {
+	let errStr = parseLog(err);
+
+	const editor = window.activeTextEditor;
+	const doc = editor?.document;
+
+    console.log(err.extra);
+
+	if (doc && "offsetLeft" in err.extra && "offsetRight" in err.extra) {
+        console.log("Setting red line decoration");
+        const start = getPositionFromOffset(doc, err.extra["offsetLeft"]);
+        const end = getPositionFromOffset(doc, err.extra["offsetRight"]);
+        const range = new Range(start, end);
+        editor.setDecorations(redLineDecorationType, [range]);
+    }
+
+    log(errStr, "ERR");
 }
 
 function commandExists(command: string): Promise<boolean> {
@@ -123,21 +122,4 @@ function commandExists(command: string): Promise<boolean> {
 
 function getPositionFromOffset(document: TextDocument, offset: number): Position {
     return document.positionAt(offset);
-}
-
-
-function handleCodeError(err: CodeError) {
-	let errStr = `${err.name} at pos ${err.offsetLeft}: ${err.descr}`;
-
-	const editor = window.activeTextEditor;
-	const doc = editor?.document;
-	if (doc) {
-        const start = getPositionFromOffset(doc, err.offsetLeft);
-        const end = getPositionFromOffset(doc, err.offsetRight);
-        const range = new Range(start, end);
-        editor.setDecorations(redLineDecorationType, [range]);
-
-        errStr = `File ${doc.fileName}:${start.line + 1}:${start.character + 1}: ${errStr}`;
-    } 
-    log(errStr, "ERROR");
 }

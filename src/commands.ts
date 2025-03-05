@@ -12,7 +12,7 @@ import { fileIsHypra } from "./utils";
 export async function startVerification() {
     const path = await getPath();
     if (!path) {
-        broadcast("Failed to get file path of Hypra file!", "ERROR");
+        broadcast("Failed to get file path of Hypra file!", "ERR");
         return;
     }
 
@@ -22,13 +22,13 @@ export async function startVerification() {
 export async function startVerificationWithArgs() {
     const path = await getPath();
     if (!path) {
-        broadcast("Failed to get file path of Hypra file!", "ERROR");
+        broadcast("Failed to get file path of Hypra file!", "ERR");
         return;
     }
 
     const argsChained = await window.showInputBox({ prompt: 'Please specify enter arguments for execution (except for file, separated by ",").' });
     if (!argsChained) {
-        broadcast('No arguments were provided. Use "Hypra: Start Verification" for default execution.', "ERROR");
+        broadcast('No arguments were provided. Use "Hypra: Start Verification" for default execution.', "ERR");
         return;
     }
     const args = argsChained.split(",").map(el => el.trim());
