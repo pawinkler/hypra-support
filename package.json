@@ -2,7 +2,7 @@
   "name": "hypra-support",
   "displayName": "Hypra Support",
   "description": "",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "engines": {
     "vscode": "^1.96.0"
   },
