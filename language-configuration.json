@@ -15,12 +15,39 @@
     ["\"", "\""],
     ["'", "'"]
   ],
-  // symbols that can be used to surround a selection
   "surroundingPairs": [
     ["{", "}"],
     ["[", "]"],
     ["(", ")"],
     ["\"", "\""],
     ["'", "'"]
-  ]
+  ],
+  "title": "Hypra Extension Settings",
+  "properties": {
+    "hypra-support.saveViperEncoding": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable/Disable the generation of a correspoinding Viper encoding file when saving a file"
+    },
+    "hypra-support.viperEncodingDir": {
+      "type": "string",
+      "default": "./",
+      "description": "Path to the directory where the Viper encoding files are saved"
+    },
+    "hypra-support.javaPath": {
+      "type": "string",
+      "default": "",
+      "description": "Path to default Java version (emtpy means global version)"
+    },
+    "hypra-support.boogiePath": {
+      "type": "string",
+      "default": "",
+      "description": "Path to default Boogie version (emtpy means global version)"
+    },
+    "hypra-support.z3Path": {
+      "type": "string",
+      "default": "",
+      "description": "Path to default Z3 version (emtpy means global version)"
+    }
+  }
 }

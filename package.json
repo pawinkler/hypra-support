@@ -36,12 +36,8 @@
     ],
     "commands": [
       {
-        "command": "hypra-support.startVerification",
-        "title": "Hypra: Start Verification"
-      },
-      {
-        "command": "hypra-support.startVerificationWithArgs",
-        "title": "Hypra: Start Verification with Arguments"
+        "command": "hypra-support.verifyFile",
+        "title": "Hypra: Verify file"
       }
     ],
     "snippets": [
@@ -49,7 +45,67 @@
         "language": "hypra",
         "path": "./snippets/hypra-snippets.code-snippets"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Hypra Support",
+      "properties": {
+        "hypra-support.verifierOptions.saveViperEncoding": {
+          "type": "boolean",
+          "default": false,
+          "description": "Saves the generated Viper program to the specified file"
+        },
+        "hypra-support.verifierOptions.forallEncoding": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only generates overapproximation encodings"
+        },
+        "hypra-support.verifierOptions.existsEncoding": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only generates underapproximation encodings"
+        },
+        "hypra-support.verifierOptions.noFrame": {
+          "type": "boolean",
+          "default": false,
+          "description": "Turns off forall framing after loops and method calls"
+        },
+        "hypra-support.verifierOptions.existsFrame": {
+          "type": "boolean",
+          "default": false,
+          "description": "Turns on exists framing after loops"
+        },
+        "hypra-support.verifierOptions.inline": {
+          "type": "boolean",
+          "default": false,
+          "description": "Verifies the loop invariants in an inline fashion when using the whileDesugard rule"
+        },
+        "hypra-support.verifierOptions.auto": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically selects the rule to verify loops when the rules are unspecified"
+        },
+        "hypra-support.requisites.javaPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to default Java version (emtpy means global version)"
+        },
+        "hypra-support.requisites.boogiePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to default Boogie version (emtpy means global version)"
+        },
+        "hypra-support.requisites.z3Path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to default Z3 version (emtpy means global version)"
+        },
+        "hypra-support.requisites.hypraPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to default Hypra version (emtpy means extension's internal version)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
