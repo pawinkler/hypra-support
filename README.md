@@ -15,7 +15,9 @@ At the moment, Hypra Support requires very specific pre-requisites in order to b
  * [Boogie](https://www.microsoft.com/en-us/research/project/boogie-an-intermediate-verification-language/), version 2.15.8.0
  * [Z3 Theorem Prover](https://github.com/Z3Prover/z3), version 4.8.14
 
-Using other versions is possible, but not tested. At the moment, only the system-wide installations can be used.
+Using other versions is possible, but not tested. By default, Hypra uses the global installations, but paths can be updated in the settings. 
+
+**NOTE**: At the moment, changing the binaries for Boogie and Z3 has **no** effect. We are working on this.
 
 ## Usage
 
@@ -30,24 +32,26 @@ There are two possible use cases supported: **In-file verification** and **manua
 **Manual Verification**:
 
 1. Install the Hypra Support extension in Visual Studio Code.
-2. Run the _Hypra: Start Verification_ or the _Hypra: Start Verification with Arguments_ command.
+2. Run the _Hypra: Verify File_ command.
 
 ### Commands
 
-These commands are supported. 
-
-**Hypra: Start Verification**:
+**Hypra: Verify File**:
 
 - (No hypra file) Specify the path to corresponding Hypra file.
 - Verification process starts and feedback is printed to the debug console.
 
-**Hypra: Start Verification with Arguments**:
+### Settings
 
-- (No hypra file) Specify the path to corresponding Hypra file.
-- Specify all arguments needed for verifying a Hypra file from the console (except file path).
-- Verification process starts and feedback is printed to the debug console.
+Hypra supports customizable settings, which allow you to adjust the behaviour of the Hypra instance which is running in the background.
 
-Note: Failing to specify correct arguments will lead to erronous behaviour in this case.
+This can be achieved by adjusting them in the VS Code settings. For example, you could change the Hypra path by:
+
+1. Open the global VS Code settings (by >Preferences: Open Settings (UI))
+2. Search for Hypra.
+3. Adjust the corresponding setting.
+
+**Note**: Entering faulty settings will lead to erronous behaviour in this case. More information can be found on Hypra's GitHub page.
 
 ## Hypra / HHL Documentation
 
