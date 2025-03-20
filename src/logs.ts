@@ -27,7 +27,7 @@ export function parseLog(obj: LogEntry): string {
     const level = translateLevel(obj.level);
 
     let out = `[${time}] [${level}]`;
-    if (obj.extra && typeof obj.extra === 'object') {
+    if (obj.extra) {
         if ('offsetLeft' in obj.extra && 'offsetRight' in obj.extra) {
             out += ` in ${obj.extra['filePath']}:${obj.extra['offsetLeft']}-${obj.extra['offsetRight']}`;
         }
@@ -36,6 +36,16 @@ export function parseLog(obj: LogEntry): string {
         }
     }
     out += ` ${obj.message}`;
+    if (obj.extra) {
+        if ('quantifiersRemoved' in obj.extra && parseInt(obj.extra['quantifiersRemoved']) > 0) {
+            out += ` (${obj.extra['quantifiersRemoved']} existential quantifiers removed)`;
+        }
+    }
+    if (obj.extra) {
+        if ('whileRule' in obj.extra) {
+            out += ` (${obj.extra['whileRule']})`;
+        }
+    }
     return out;
 }
 

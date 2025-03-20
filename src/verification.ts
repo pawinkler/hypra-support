@@ -187,6 +187,8 @@ export async function verify(filePath: string) {
  */
 function handleSTDOUT(data: Buffer) {
     const hanldeJSON = (jsonStr: string) => { 
+        console.log("Received STDOUT JSON: ", jsonStr);
+        
         try {
             const obj = JSON.parse(jsonStr);
             if (obj.level === "ERR") {
