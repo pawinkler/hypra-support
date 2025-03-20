@@ -1,129 +1,61 @@
-import { window, Range, TextDocument, Position, ExtensionContext, commands, workspace, StatusBarItem, StatusBarAlignment, ThemeColor, languages, Hover, HoverProvider, Disposable } from "vscode";
+import { window, Range, TextDocument, Position, ExtensionContext, commands, workspace, StatusBarItem, StatusBarAlignment, ThemeColor, languages, Hover, HoverProvider, Disposable, Uri } from "vscode";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import { basename, join, dirname } from "path";
 import { broadcast, clearLog, log, LogEntry, notify, parseLog, showLog } from "./logs";
+import * as statusBar from "./statusBar";
+import { fetchConfiguration, hypraConfig } from "./configuration";
 
-let statusBar: StatusBarItem | undefined = undefined;
-export function createStatusBar() {
-    statusBar = window.createStatusBarItem(StatusBarAlignment.Left);
-    statusBar.name = "Hypra Verification Indicator";
-    statusBar.command = "hypra-support.verifyFile";
-    barSetInitial();
-}
+/** Verification Module: Handles all verification related operations.
+ * 
+ * Functions:
+ * - setContext(): Sets the extension context and creates the hypra production path.
+ * - checkPrerequisites(): Checks if the current configuration satsifies all prerequisites needed for verification.
+ * - verify(filePath: string): Attempts to verify the provided document.
+ */
 
-export function barRemove() {
-    if (statusBar) {
-        statusBar.hide();
+// -- variables for verification --
+// --- error handling ---
+const errorDecoration = window.createTextEditorDecorationType({ textDecoration: 'underline wavy red' }); // style for error decoration
+let errorsOccured = false; // error flag
+let hoverProviders: Disposable[] = []; // error hover providers
+let errorRanges: Array<{range: Range; msg: string}> = [];
+
+// --- extension variables ---
+let ctx: ExtensionContext | undefined = undefined; // extension context
+let hypraProdPath: string | undefined = undefined; // hypra production path, depends on the extension context
+
+// --- verification variables ---
+let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined; // verification process
+let veriDoc: TextDocument | undefined = undefined; // document in verification process
+
+// -- functions --
+
+/** Resets all states for verification */
+function reset() {
+    statusBar.setInitialState();
+    errorsOccured = false;
+    errorRanges = [];
+    hoverProviders.forEach(hp => hp.dispose());
+    hoverProviders = [];
+
+    if (window.activeTextEditor) {
+        window.activeTextEditor.setDecorations(errorDecoration, []);
+        veriDoc = undefined;
+    }
+
+    if (verificationProcess) { 
+        verificationProcess.kill(); 
+        verificationProcess = undefined;
     }
 }
 
-export function barSetInitial() {
-    if (statusBar) {
-        statusBar.text = "Hypra: Activation successful. Start Verification?";
-        statusBar.show();
-    }
-}
-
-let alternation = false;
-let interval: NodeJS.Timeout | undefined = undefined;
-
-function barSetInVerification(c: number = 0) {
-    if (statusBar) {
-        statusBar.text = "Hypra: Verification is running |";
-        statusBar.color = "#ffd000";
-        statusBar.show();
-
-        if (interval) {
-            return;
-        }
-        interval = setInterval(() => {
-            if (statusBar) {
-                statusBar.text = "Hypra: Verification is running " + (alternation ? "|" : "-");
-                alternation = !alternation;
-                statusBar.show();
-            }
-        }, 500);
-    }
-}
-
-function barSetError() {
-    if (statusBar) {
-        if (interval) {
-            clearInterval(interval);
-            interval = undefined;
-        }
-        statusBar.text = "Hypra: Verifcation failed! Click to retry.";
-        statusBar.color = "#ff0d00";
-        statusBar.show();
-    }
-}
-
-function barSetSuccess() {
-    if (statusBar) {
-        if (interval) {
-            clearInterval(interval);
-            interval = undefined;
-        }
-        statusBar.text = "Hypra: Verficiation successful!";
-        statusBar.color = "#19e35c";
-        statusBar.show();
-    }
-}
-
-const hypraConfig = {
-    javaPath: undefined,
-    boogiePath: undefined,
-    z3Path: undefined,
-    hypraPath: undefined,
-    saveViperEncoding: undefined,
-    forallEncoding: undefined,
-    existsEncoding: undefined,
-    noFrame: undefined,
-    existsFrame: undefined,
-    auto: undefined
-} as {
-    javaPath: string | undefined,
-    boogiePath: string | undefined,
-    z3Path: string | undefined,
-    hypraPath: string | undefined,
-    saveViperEncoding: boolean | undefined,
-    forallEncoding: boolean | undefined,
-    existsEncoding: boolean | undefined,
-    noFrame: boolean | undefined,
-    existsFrame: boolean | undefined,
-    auto: boolean | undefined,
-    inline: boolean | undefined
-};
-
-function fetchConfiguration() {
-    const config = workspace.getConfiguration('hypra-support');
-
-    hypraConfig.javaPath = config.get<string>('requisites.javaPath');
-    hypraConfig.boogiePath = config.get<string>('requisites.boogiePath');
-    hypraConfig.z3Path = config.get<string>('requisites.z3Path');
-    hypraConfig.hypraPath = config.get<string>('requisites.hypraPath');
-    hypraConfig.saveViperEncoding = config.get<boolean>('verifierOptions.saveViperEncoding');
-    hypraConfig.forallEncoding = config.get<boolean>('verifierOptions.forallEncoding');
-    hypraConfig.existsEncoding = config.get<boolean>('verifierOptions.existsEncoding');
-    hypraConfig.noFrame = config.get<boolean>('verifierOptions.noFrame');
-    hypraConfig.existsFrame = config.get<boolean>('verifierOptions.existsFrame');
-    hypraConfig.auto = config.get<boolean>('verifierOptions.auto');
-    hypraConfig.inline = config.get<boolean>('verifierOptions.inline');
-}
-
-const redLineDecorationType = window.createTextEditorDecorationType({
-    textDecoration: 'underline wavy red',
-});
-
-let ctx: ExtensionContext | undefined = undefined;
-let hypraProdPath: string | undefined = undefined;
-let verificationProcess: ChildProcessWithoutNullStreams | null = null;
-
+/** Sets the extension context, creates hypra path, called in extension.ts */
 export function setContext(_ctx: ExtensionContext) {
     ctx = _ctx;
     hypraProdPath = join(ctx.extensionPath, 'hypra', 'hhl.jar');
 }
 
+/** Checks if the current configuration satsifies all prerequisites needed for verification */
 export async function checkPrerequisites(): Promise<boolean> {
     fetchConfiguration();
 
@@ -160,41 +92,44 @@ export async function checkPrerequisites(): Promise<boolean> {
     }
 }
 
-let errorsOccured = false;
-let hoverProviders: Disposable[] = [];
-
+/** Attempts to verify the provided document
+ * 
+ * @param filePath The path to the file to verify
+ * @returns void - the results are displayed in the output channel
+ * 
+ * Behaviour:
+ * - Resets all previous states
+ * 
+ */
 export async function verify(filePath: string) {
-    barSetInVerification();
+    // reset all pervious states
+    reset();
 
-    errorsOccured = false;
+    statusBar.setVerificationState();
 
     if (!await checkPrerequisites()) {
         broadcast("Verification process was not started due to missing prerequisites.", "ERR");
-        barSetError();
+        statusBar.setErrorState();
         return;
     }
 
-    if (verificationProcess) { verificationProcess.kill(); }
-
-    const editor = window.activeTextEditor;
-    const doc = editor?.document;
-
-    // reset
-    errorRanges = [];
-    if (editor) {
-        editor.setDecorations(redLineDecorationType, errorRanges.map(e => e.range));
-        hoverProviders.forEach(hp => hp.dispose());
-        hoverProviders = [];
-        veriDoc = editor.document;
+    // open provided document
+    try {
+        const uri = Uri.file(filePath);
+        veriDoc = await workspace.openTextDocument(uri);
+    } catch (e) {
+        console.error(e);
+        broadcast("The provided document could not be opened!", "ERR");
+        statusBar.setErrorState();
+        return;
     }
 
+    // open log and return to document
     showLog();
-    if (doc) {
-        window.showTextDocument(doc);
-    }
     clearLog();
+    window.showTextDocument(veriDoc);
 
-    // parse arguments
+    // construct the verification command
     const args: string[] = [];
 
     args.push("-Xss32m"); // additional stack space
@@ -235,11 +170,21 @@ export async function verify(filePath: string) {
     } catch (e) {
         notify("An unexpected error occured during the verification process (CLIENT). More information can be found in the extension's output.", "ERR");
         log((e as Error).message, "ERR");
-        barSetError();
-        console.log(e);
+        statusBar.setErrorState();
+        console.error(e);
     }
 }
 
+/** Handles output from the verification process via the standard output.
+ * 
+ * @param data The data from the standard output
+ * @returns void - the results are displayed in the output channel
+ * 
+ * Behaviour:
+ * - Parses the JSON object from the data
+ * - Logs the parsed object
+ * - Handles errors which occured during the verification process
+ */
 function handleSTDOUT(data: Buffer) {
     const hanldeJSON = (jsonStr: string) => { 
         try {
@@ -259,39 +204,74 @@ function handleSTDOUT(data: Buffer) {
     data.toString().trimEnd().split("\n").forEach(hanldeJSON);
 }
 
+/** Handles output from the verification process via the standard error.
+ * 
+ * @param data The data from the standard error
+ * @returns void - the results are displayed in the output channel
+ * 
+ * Behaviour:
+ * - Logs the error message without parsing
+ */
 function handleSTDERR(data: Buffer) {
     const str = data.toString().trim();
     notify("An unexpected error occured during verification. More information can be found in the extension's output.", "ERR");
     log(str, "ERR");
 }
 
+/** Handles the termination of the verification process.
+ * 
+ * @param code The exit code of the verification process
+ * @returns void - the results are displayed in the output channel
+ */
 function handleTermination(code: number) {
-    verificationProcess = null;
+    verificationProcess = undefined;
 
     if (code === 0) {
         if (errorsOccured) {
-            barSetError();
-            if (window.activeTextEditor) {
-                window.activeTextEditor.setDecorations(redLineDecorationType, errorRanges.map(e => e.range));
-            }
+            // handle expected errors
+            statusBar.setErrorState();
+            if (!window.activeTextEditor) { return; }
+
+            window.showTextDocument(veriDoc!);
+            // set error decoration
+            window.activeTextEditor.setDecorations(errorDecoration, errorRanges.map(e => e.range));
+            // set hover messages
+            errorRanges.forEach(er => {
+                hoverProviders.push(languages.registerHoverProvider('*', {
+                    provideHover(doc, position, token) {
+                        if (position.isAfter(er.range.start) && position.isBefore(er.range.end)) {
+                            return new Hover(er.msg);
+                        }
+                    }
+                }));
+            });
         } else {
-            barSetSuccess();
+            statusBar.setSuccessState();
         }
     } else {
+        // handle unexpected errors
         broadcast(`Verification failed with code ${code}`, "ERR");
-        barSetError();
+        statusBar.setErrorState();
     }
 }
 
-let errorRanges: Array<{range: Range; msg: string}> = [];
-let veriDoc: TextDocument | undefined = undefined;
-
+/** Handles expected errors which occur during the verification process 
+ * 
+ * @param err The error object
+ * @returns void - the results are displayed in the output channel
+ *
+ * Behaviour:
+ * - Sets the error flag
+ * - Sets the error decoration in editor
+ * - Sets the hover message in editor
+ * - Logs the error message
+*/
 function handleCodeError(err: LogEntry) {
     errorsOccured = true;
 	let errStr = parseLog(err);
 
 	if (veriDoc && "offsetLeft" in err.extra && "offsetRight" in err.extra) {
-        console.log("Setting red line decoration");
+        console.log("Setting error decoration");
 
         const start = getPositionFromOffset(veriDoc, err.extra["offsetLeft"]);
         const end = getPositionFromOffset(veriDoc, err.extra["offsetRight"]);
@@ -299,20 +279,16 @@ function handleCodeError(err: LogEntry) {
             range: new Range(start, end),
             msg: errStr
         });
-
-        console.log("Setting hover message");
-        hoverProviders.push(languages.registerHoverProvider('*', {
-            provideHover(doc, position, token) {
-                if (position.isAfter(start) && position.isBefore(end)) {
-                    return new Hover(errStr);
-                }
-            }
-        }));
     }
 
     log(errStr, "ERR");
 }
 
+/** Fetches the path to a binary of a command
+ * 
+ * @param command The command to find the binary path for
+ * @returns The path to the binary
+ */
 function getBinaryPathOfCommand(command: string): Promise<string> {
     const platform = process.platform;
     const checkCommand = platform === 'win32' ? `where ${command}` : `which ${command}`;
@@ -328,6 +304,7 @@ function getBinaryPathOfCommand(command: string): Promise<string> {
     });
 }
 
+/** Converts offset to document position */
 function getPositionFromOffset(document: TextDocument, offset: number): Position {
     return document.positionAt(offset);
 }
