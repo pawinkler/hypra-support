@@ -1,28 +1,28 @@
-import { window, Range, TextDocument, Position, ExtensionContext, commands, workspace, StatusBarItem, StatusBarAlignment, ThemeColor, languages, Hover, HoverProvider, Disposable, Uri } from "vscode";
+import { window, Range, TextDocument, Position, ExtensionContext, commands, workspace, languages, Hover, Disposable, Uri } from "vscode";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import { basename, join, dirname } from "path";
 import { broadcast, clearLog, log, LogEntry, notify, parseLog, showLog } from "./logs";
 import * as statusBar from "./statusBar";
 import { fetchConfiguration, hypraConfig } from "./configuration";
 
-/** Verification Module: Handles all verification related operations.
+/** Verification Module: Handles all verification-related operations.
  * 
  * Functions:
- * - setContext(): Sets the extension context and creates the hypra production path.
- * - checkPrerequisites(): Checks if the current configuration satsifies all prerequisites needed for verification.
+ * - setContext(): Sets the extension context and creates the Hypra production path.
+ * - checkPrerequisites(): Checks if the current configuration satisfies all prerequisites needed for verification.
  * - verify(filePath: string): Attempts to verify the provided document.
  */
 
 // -- variables for verification --
 // --- error handling ---
 const errorDecoration = window.createTextEditorDecorationType({ textDecoration: 'underline wavy red' }); // style for error decoration
-let errorsOccured = false; // error flag
+let errorsOccurred = false; // error flag
 let hoverProviders: Disposable[] = []; // error hover providers
 let errorRanges: Array<{range: Range; msg: string}> = [];
 
 // --- extension variables ---
 let ctx: ExtensionContext | undefined = undefined; // extension context
-let hypraProdPath: string | undefined = undefined; // hypra production path, depends on the extension context
+let hypraProdPath: string | undefined = undefined; // Hypra production path, depends on the extension context
 
 // --- verification variables ---
 let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined; // verification process
@@ -33,7 +33,7 @@ let veriDoc: TextDocument | undefined = undefined; // document in verification p
 /** Resets all states for verification */
 function reset() {
     statusBar.setInitialState();
-    errorsOccured = false;
+    errorsOccurred = false;
     errorRanges = [];
     hoverProviders.forEach(hp => hp.dispose());
     hoverProviders = [];
@@ -49,13 +49,13 @@ function reset() {
     }
 }
 
-/** Sets the extension context, creates hypra path, called in extension.ts */
+/** Sets the extension context, creates Hypra path, called in extension.ts */
 export function setContext(_ctx: ExtensionContext) {
     ctx = _ctx;
     hypraProdPath = join(ctx.extensionPath, 'hypra', 'hhl.jar');
 }
 
-/** Checks if the current configuration satsifies all prerequisites needed for verification */
+/** Checks if the current configuration satisfies all prerequisites needed for verification */
 export async function checkPrerequisites(): Promise<boolean> {
     fetchConfiguration();
 
@@ -97,12 +97,12 @@ export async function checkPrerequisites(): Promise<boolean> {
  * @param filePath The path to the file to verify
  * @returns void - the results are displayed in the output channel
  * 
- * Behaviour:
+ * Behavior:
  * - Resets all previous states
  * 
  */
 export async function verify(filePath: string) {
-    // reset all pervious states
+    // reset all previous states
     reset();
 
     statusBar.setVerificationState();
@@ -137,10 +137,10 @@ export async function verify(filePath: string) {
 
     if (hypraConfig.hypraPath && hypraConfig.hypraPath !== "") {
         args.push(hypraConfig.hypraPath!); 
-        console.log("Using custom hypra path: ", hypraConfig.hypraPath);
+        console.log("Using custom Hypra path: ", hypraConfig.hypraPath);
     } else { 
         args.push(hypraProdPath!); 
-        console.log("Using default hypra path: ", hypraProdPath);
+        console.log("Using default Hypra path: ", hypraProdPath);
     }
 
     args.push(filePath); // file to verify
@@ -168,7 +168,7 @@ export async function verify(filePath: string) {
         verificationProcess.stderr.on('data', handleSTDERR);
         verificationProcess.on('exit', handleTermination);
     } catch (e) {
-        notify("An unexpected error occured during the verification process (CLIENT). More information can be found in the extension's output.", "ERR");
+        notify("An unexpected error occurred during the verification process (CLIENT). More information can be found in the extension's output.", "ERR");
         log((e as Error).message, "ERR");
         statusBar.setErrorState();
         console.error(e);
@@ -180,13 +180,13 @@ export async function verify(filePath: string) {
  * @param data The data from the standard output
  * @returns void - the results are displayed in the output channel
  * 
- * Behaviour:
+ * Behavior:
  * - Parses the JSON object from the data
  * - Logs the parsed object
- * - Handles errors which occured during the verification process
+ * - Handles errors that occurred during the verification process
  */
 function handleSTDOUT(data: Buffer) {
-    const hanldeJSON = (jsonStr: string) => { 
+    const handleJSON = (jsonStr: string) => { 
         console.log("Received STDOUT JSON: ", jsonStr);
         
         try {
@@ -203,7 +203,7 @@ function handleSTDOUT(data: Buffer) {
         }
     };
 
-    data.toString().trimEnd().split("\n").forEach(hanldeJSON);
+    data.toString().trimEnd().split("\n").forEach(handleJSON);
 }
 
 /** Handles output from the verification process via the standard error.
@@ -211,12 +211,12 @@ function handleSTDOUT(data: Buffer) {
  * @param data The data from the standard error
  * @returns void - the results are displayed in the output channel
  * 
- * Behaviour:
+ * Behavior:
  * - Logs the error message without parsing
  */
 function handleSTDERR(data: Buffer) {
     const str = data.toString().trim();
-    notify("An unexpected error occured during verification. More information can be found in the extension's output.", "ERR");
+    notify("An unexpected error occurred during verification. More information can be found in the extension's output.", "ERR");
     log(str, "ERR");
 }
 
@@ -229,7 +229,7 @@ function handleTermination(code: number) {
     verificationProcess = undefined;
 
     if (code === 0) {
-        if (errorsOccured) {
+        if (errorsOccurred) {
             // handle expected errors
             statusBar.setErrorState();
             if (!window.activeTextEditor) { return; }
@@ -257,19 +257,19 @@ function handleTermination(code: number) {
     }
 }
 
-/** Handles expected errors which occur during the verification process 
+/** Handles expected errors that occur during the verification process 
  * 
  * @param err The error object
  * @returns void - the results are displayed in the output channel
  *
- * Behaviour:
+ * Behavior:
  * - Sets the error flag
- * - Sets the error decoration in editor
- * - Sets the hover message in editor
+ * - Sets the error decoration in the editor
+ * - Sets the hover message in the editor
  * - Logs the error message
 */
 function handleCodeError(err: LogEntry) {
-    errorsOccured = true;
+    errorsOccurred = true;
 	let errStr = parseLog(err);
 
 	if (veriDoc && "offsetLeft" in err.extra && "offsetRight" in err.extra) {

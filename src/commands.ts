@@ -1,5 +1,5 @@
 import { window } from "vscode";
-import { broadcast, log } from "./logs";
+import { broadcast } from "./logs";
 import { verify } from "./verification";
 import { fileIsHypra } from "./events";
 import * as statusBar from "./statusBar";

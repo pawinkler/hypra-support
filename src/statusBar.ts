@@ -1,6 +1,6 @@
 import { StatusBarAlignment, StatusBarItem, window } from "vscode";
 
-/** Status Bar Module: Handles all status bar related operations.
+/** Status Bar Module: Handles all status bar-related operations.
  * 
  * Functions:
  * - create(): Creates a new status bar item and sets its initial state.
@@ -34,18 +34,18 @@ export function destroy() {
 export function setInitialState() {
     if (!statusBar) { return; }
 
-    statusBar.text = "Hypra: Activation successful. Start Verification?";
+    statusBar.text = "Hypra: Activation successful. Start verification?";
     statusBar.show();
 }
 
 export function setVerificationState() {
     if (!statusBar) { return; }
 
-    statusBar.text = "Hypra: Verification is running |";
+    statusBar.text = "Hypra: Verification is in progress |";
     statusBar.color = "#ffd000";
     statusBar.show();
 
-    if (interval) { return;}
+    if (interval) { return; }
 
     interval = setInterval(() => {
         if (!statusBar) { return; }
@@ -63,7 +63,7 @@ export function setErrorState() {
             clearInterval(interval);
             interval = undefined;
         }
-        statusBar.text = "Hypra: Verifcation failed! Click to retry.";
+        statusBar.text = "Hypra: Verification failed! Click to retry.";
         statusBar.color = "#fc6262";
         statusBar.show();
     }
@@ -75,7 +75,7 @@ export function setSuccessState() {
             clearInterval(interval);
             interval = undefined;
         }
-        statusBar.text = "Hypra: Verficiation successful!";
+        statusBar.text = "Hypra: Verification successful!";
         statusBar.color = "#19e35c";
         statusBar.show();
     }

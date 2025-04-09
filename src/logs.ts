@@ -1,4 +1,4 @@
-import { window, OutputChannel } from "vscode";
+import { window } from "vscode";
 
 type LogLevel = "INF" | "WRN" | "ERR" | "DBG";
 
@@ -13,15 +13,18 @@ export interface LogEntry {
 
 const channel = window.createOutputChannel("Hypra Logs"); 
 
+/** Broadcasts a message to both the log and notification system */
 export function broadcast(msg: string, lvl: LogLevel = "INF") {
     log(msg, lvl);
     notify(msg, lvl);
 }
 
+/** Logs a message to the output channel */
 export function log(msg: string, lvl: LogLevel = "INF") {
-  channel.appendLine(msg);
+    channel.appendLine(msg);
 }
 
+/** Parses a log entry into a formatted string */
 export function parseLog(obj: LogEntry): string {
     const time = new Date(obj.timestamp).toISOString().split(".")[0];
     const level = translateLevel(obj.level);
@@ -49,14 +52,17 @@ export function parseLog(obj: LogEntry): string {
     return out;
 }
 
+/** Clears the log output channel */
 export function clearLog() {
     channel.clear();
 }
 
+/** Displays the log output channel */
 export function showLog() {
     channel.show();
 }
 
+/** Sends a notification message based on the log level */
 export function notify(msg: string, lvl: LogLevel = "INF") {
     switch (lvl) {
         case "INF": 
@@ -74,10 +80,12 @@ export function notify(msg: string, lvl: LogLevel = "INF") {
     }
 }
 
+/** Gets the current timestamp in ISO format */
 function getTimestamp(): string {
-  return new Date().toISOString();
+    return new Date().toISOString();
 }
 
+/** Translates a log level to its full string representation */
 function translateLevel(lvl: LogLevel): string {
     switch (lvl) {
         case "INF": return "INFO";
