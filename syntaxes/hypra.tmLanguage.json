@@ -13,7 +13,7 @@
         },
         {
             "name": "keyword.control.custom",
-            "match": "\\b(if|else|while|return|method|hyperAssume|hyperAssert|assume|assert|frame|var|havoc|use)\\b"
+            "match": "\\b(if|else|while|returns|method|hyperAssume|hyperAssert|assume|assert|frame|var|havoc|use)\\b"
         },
         {
           "name": "keyword.verification.custom",
