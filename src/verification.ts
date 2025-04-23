@@ -26,7 +26,7 @@ let hypraProdPath: string | undefined = undefined; // Hypra production path, dep
 
 // --- verification variables ---
 let verificationProcess: ChildProcessWithoutNullStreams | undefined = undefined; // verification process
-let veriDoc: TextDocument | undefined = undefined; // document in verification process
+export let veriDoc: TextDocument | undefined = undefined; // document in verification process
 
 // -- functions --
 
@@ -161,9 +161,18 @@ export async function verify(filePath: string) {
 
     args.push("--ext"); // declare as extension
 
+    // set environment variables
+    let env = { ...process.env };
+    if (hypraConfig.boogiePath && hypraConfig.boogiePath !== "") {
+        env["BOOGIE_EXE"] = hypraConfig.boogiePath;
+    }
+    if (hypraConfig.z3Path && hypraConfig.z3Path !== "") {
+        env["Z3_EXE"] = hypraConfig.z3Path;
+    }
+
     // start verification
     try {
-        verificationProcess = spawn(hypraConfig.javaPath as string, args); 
+        verificationProcess = spawn(hypraConfig.javaPath as string, args, { env: env }); 
         verificationProcess.stdout.on('data', handleSTDOUT);
         verificationProcess.stderr.on('data', handleSTDERR);
         verificationProcess.on('exit', handleTermination);
@@ -203,7 +212,7 @@ function handleSTDOUT(data: Buffer) {
         }
     };
 
-    data.toString().trimEnd().split("\n").forEach(handleJSON);
+    data.toString().trimEnd().replaceAll("'", "\"").split("\n").forEach(handleJSON);
 }
 
 /** Handles output from the verification process via the standard error.

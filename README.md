@@ -17,8 +17,6 @@ At the moment, Hypra Support requires very specific pre-requisites in order to b
 
 Using other versions is possible, but not tested. By default, Hypra uses the global installations, but paths can be updated in the settings. 
 
-**NOTE**: At the moment, changing the binaries for Boogie and Z3 has **no** effect. We are working on this.
-
 ## Usage
 
 There are two possible use cases supported: **In-file verification** and **manual verification**. By default, verification is attemtepted using the _--auto_ argument for rule selection.

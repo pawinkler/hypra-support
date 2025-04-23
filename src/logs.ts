@@ -1,4 +1,5 @@
 import { window } from "vscode";
+import { veriDoc } from "./verification";
 
 type LogLevel = "INF" | "WRN" | "ERR" | "DBG";
 
@@ -31,20 +32,23 @@ export function parseLog(obj: LogEntry): string {
 
     let out = `[${time}] [${level}]`;
     if (obj.extra) {
-        if ('offsetLeft' in obj.extra && 'offsetRight' in obj.extra) {
-            out += ` in ${obj.extra['filePath']}:${obj.extra['offsetLeft']}-${obj.extra['offsetRight']}`;
-        }
         if ('title' in obj.extra) {
-            out += ` ${obj.extra['title']}:`;
+            out += ` ${obj.extra['title']}`;
+        }
+        if ('offsetLeft' in obj.extra && 'offsetRight' in obj.extra) {
+            if (veriDoc) {
+                const pos = veriDoc.positionAt(obj.extra['offsetLeft']);
+                out += ` in ${veriDoc.fileName}:${pos.line + 1}:${pos.character + 1}:`;
+            } else {
+                out += ` in ${obj.extra['filePath']}:${obj.extra['offsetLeft']}:`;
+            }
         }
     }
     out += ` ${obj.message}`;
     if (obj.extra) {
         if ('quantifiersRemoved' in obj.extra && parseInt(obj.extra['quantifiersRemoved']) > 0) {
-            out += ` (${obj.extra['quantifiersRemoved']} existential quantifiers removed)`;
+            out += ` (${obj.extra['quantifiersRemoved']} existential quantifier(s) removed)`;
         }
-    }
-    if (obj.extra) {
         if ('whileRule' in obj.extra) {
             out += ` (${obj.extra['whileRule']})`;
         }
