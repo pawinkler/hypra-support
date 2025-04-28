@@ -173,8 +173,10 @@ export async function verify(filePath: string) {
     // start verification
     try {
         verificationProcess = spawn(hypraConfig.javaPath as string, args, { env: env }); 
+
         verificationProcess.stdout.on('data', handleSTDOUT);
         verificationProcess.stderr.on('data', handleSTDERR);
+        verificationProcess.on('error', handleError);
         verificationProcess.on('exit', handleTermination);
     } catch (e) {
         notify("An unexpected error occurred during the verification process (CLIENT). More information can be found in the extension's output.", "ERR");
@@ -318,4 +320,17 @@ function getBinaryPathOfCommand(command: string): Promise<string> {
 /** Converts offset to document position */
 function getPositionFromOffset(document: TextDocument, offset: number): Position {
     return document.positionAt(offset);
+}
+
+/** Handles errors that occur when spawn results in an error */
+function handleError(err: Error) {
+    const str = (err as Error).message;
+    if (str.includes("ENOENT")) {
+        notify("The provided path to the Java binary is invalid. Please update the path in the settings.", "ERR");
+    } else {
+        notify("An unexpected error occurred during the verification process. More information can be found in the output.", "ERR");
+        log(str, "ERR");
+        console.error(err);
+    }
+    statusBar.setErrorState();
 }
