@@ -27,6 +27,13 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "iconThemes": [
+      {
+        "id": "hypra-icons",
+        "label": "Support for Hypra files",
+        "path": "./icons/hypra-icons.json"
+      }
+    ],
     "grammars": [
       {
         "language": "hypra",

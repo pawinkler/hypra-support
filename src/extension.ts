@@ -4,6 +4,7 @@ import { checkPrerequisites, setContext } from './verification';
 import { changeConfiguration, openDocument, saveDocument } from './events';
 import { broadcast } from './logs';
 import * as statusBar from './statusBar';
+import { activateFileIcons } from './icons';
 
 /** Activates the Hypra Support extension
  * 
@@ -26,6 +27,9 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
     // Create the status bar
     statusBar.create();
+
+    // Declare file icon
+    activateFileIcons();
 }
 
 /** Deactivates the Hypra Support extension */

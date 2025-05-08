@@ -1,0 +1,20 @@
+{
+    "iconDefinitions": {
+      "_hhl": {
+        "iconPath": "./hhl_file_icon_32x32.png"
+      }
+    },
+    "fileExtensions": {
+      "hhl": "_hhl"
+    },
+    "light": {
+      "fileExtensions": {
+        "hhl": "_hhl"
+      }
+    },
+    "dark": {
+      "fileExtensions": {
+        "hhl": "_hhl"
+      }
+    }
+  }
